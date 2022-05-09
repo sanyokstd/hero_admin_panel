@@ -1,0 +1,35 @@
+{
+  "heroes": [
+    {
+      "id": 1,
+      "name": "Первый герой",
+      "description": "Первый герой в рейтинге!",
+      "element": "fire"
+    },
+    {
+      "id": 2,
+      "name": "Неизвестный герой",
+      "description": "Скрывающийся в тени",
+      "element": "wind"
+    },
+    {
+      "name": "Неизвестный герой3",
+      "description": "Скрывающийся в тени3\n\n",
+      "element": "earth",
+      "id": 4
+    },
+    {
+      "name": "Неизвестный герой4",
+      "description": "Скрывающийся в тени4\n\n",
+      "element": "water",
+      "id": 5
+    }
+  ],
+  "filters": [
+    "all",
+    "fire",
+    "water",
+    "wind",
+    "earth"
+  ]
+}
