@@ -1,63 +1,65 @@
-import {useHttp} from '../../hooks/http.hook';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setActiveFilter, getFilters, heroesFetching, heroesFetchingError } from '../../actions';
+import classNames from 'classnames';
+import store from '../../store'
+
+import {activeFilterChanged, fetchFilters, selectAll} from './filtersSlice';
+import Spinner from '../spinner/Spinner';
+
 // Задача для этого компонента:
 // Фильтры должны формироваться на основании загруженных данных
 // Фильтры должны отображать только нужных героев при выборе
 // Активный фильтр имеет класс active
-// Изменять json-файл для удобства МОЖНО!
-// Представьте, что вы попросили бэкенд-разработчика об этом
 
 const HeroesFilters = () => {
-    const {filters, activeFilter} = useSelector(state => state);
-    const dispatch = useDispatch();
-    const {request} = useHttp();
 
+    const {filtersLoadingStatus, activeFilter} = useSelector(state=>state.filters);
+    const filters = selectAll(store.getState())
+    const dispatch = useDispatch();
+
+    // Запрос на сервер для получения фильтров и последовательной смены состояния
     useEffect(() => {
-        dispatch(heroesFetching());
-        request("http://localhost:3001/filters")
-            .then(data => dispatch(getFilters(data)))
-            .catch(() => dispatch(heroesFetchingError())) 
+        dispatch(fetchFilters())
+
         // eslint-disable-next-line
     }, []);
 
-    const handeClickFilter = (el) => {
-        dispatch(setActiveFilter(el))
+    if (filtersLoadingStatus === "loading") {
+        return <Spinner/>;
+    } else if (filtersLoadingStatus === "error") {
+        return <h5 className="text-center mt-5">Ошибка загрузки</h5>
     }
-    
-    const setClass = (filterName) => {
-        switch (filterName){
-            case 'all':
-                return('btn-outline-dark')
-            case 'fire':
-                return('btn-outline-danger')
-            case 'water':
-                return('btn-outline-primary')
-            case 'earth':
-                return('btn-outline-success')
-            case 'wind':
-                return('btn-outline-secondary')
-            default:
-                break;
+
+    const renderFilters = (arr) => {
+        if (arr.length === 0) {
+            return <h5 className="text-center mt-5">Фильтры не найдены</h5>
         }
+
+        // Данные в json-файле я расширил классами и текстом
+        return arr.map(({name, className, label}) => {
+
+            // Используем библиотеку classnames и формируем классы динамически
+            const btnClass = classNames('btn', className, {
+                'active': name === activeFilter
+            });
+            
+            return <button 
+                        key={name} 
+                        id={name} 
+                        className={btnClass}
+                        onClick={() => dispatch(activeFilterChanged(name))}
+                        >{label}</button>
+        })
     }
+
+    const elements = renderFilters(filters);
 
     return (
         <div className="card shadow-lg mt-4">
             <div className="card-body">
                 <p className="card-text">Отфильтруйте героев по элементам</p>
                 <div className="btn-group">
-                    {
-                        filters.map((el,index) => {
-                            let elClassName = 'btn '
-                            elClassName += setClass(el)
-                            elClassName += activeFilter === el ? ' active' : ''
-                            return(
-                                <button key={index} className={elClassName} onClick={()=>handeClickFilter(el)}>{el}</button>
-                            )
-                        })
-                    }
+                    {elements}
                 </div>
             </div>
         </div>
